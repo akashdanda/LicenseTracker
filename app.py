@@ -3,8 +3,10 @@ import streamlit as st
 import os
 from PIL import Image
 import cv2
+import torch
+from functions import ocr_extraction
 
-UPLOAD_DIR = "uploaded_images"
+UPLOAD_DIR = "uploaded_images_test"
 
 st.title("License Plate Detection")
 
@@ -33,8 +35,15 @@ with st.form(key="license"):
                 model = YOLO("best.pt")
                 results = model(save_path)
 
-                # Get image with detections plotted (numpy array)
+                # Get image with detections plotted 
                 res_plotted = results[0].plot()
-
-                # Show result image in Streamlit
-                st.image(res_plotted, caption="Detection Result", use_column_width=True)
+                plate_coord = results[0].boxes.data
+                python_list = plate_coord.tolist()
+                coord = [python_list[0][0], python_list[0][1], python_list[0][2], python_list[0][3]]
+                x1, y1, x2, y2 = map(int,coord)
+                st.image(res_plotted, caption="Detection Result", use_container_width=True)
+                image = cv2.imread(save_path)
+                plate_img = image[y1:y2, x1:x2]
+                plate_img_rgb = cv2.cvtColor(plate_img, cv2.COLOR_BGR2RGB) #to display on streamlit
+                st.image(plate_img_rgb)
+                st.write("License Tracker: ",ocr_extraction(plate_img))
