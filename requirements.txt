@@ -5,3 +5,4 @@ pillow
 opencv-python
 torch
 numpy
+python-dotenv
